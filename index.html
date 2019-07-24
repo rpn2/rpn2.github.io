@@ -98,7 +98,7 @@ var xAxis = d3.axisBottom(xScale),
     xAxis2 = d3.axisBottom(xScale2); // xAxis for brush slider
     
 xScale.domain(d3.extent(data, function(d) { return parseDate(d.Year); }));
-y.domain([0, 
+yScale.domain([0, 
               d3.max(data, function(d) { 
                 return d3.max([d.value]);
               })]);
