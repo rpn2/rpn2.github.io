@@ -128,7 +128,7 @@ svg.append("g")
     .attr("class", "y axis")
     .call(d3.axisLeft(yScale)); // Create an axis component with d3.axisLeft
 
-}
+
 
 // 9. Append the path, bind the data, and call the line generator 
 svg.append("path")
@@ -149,6 +149,7 @@ svg.selectAll(".dot")
         this.attr('class', 'focus')
     })
       .on("mouseout", function() {  });
-
+      
+}
 </script>
 </body></html>
