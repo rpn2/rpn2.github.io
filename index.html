@@ -80,7 +80,7 @@ var margin = {top: 20, right: 200, bottom: 100, left: 50},
 
 
 
-var parseDate = d3.timeFormat("%Y").parse;
+var parseDate = d3.timeParse("%Y");
 var bisectDate = d3.bisector(function(d) { return d.date; }).left;
 
 var xScale = d3.scaleTime()
@@ -97,19 +97,21 @@ var color = d3.scaleOrdinal().range(["#48A36D",  "#56AE7C",  "#64B98C"]);
 var xAxis = d3.axisBottom(xScale),
     xAxis2 = d3.axisBottom(xScale2); // xAxis for brush slider
     
-
+xScale.domain(d3.extent(data, function(d) { return parseDate(d.Year); }));
+y.domain([0, 
+              d3.max(data, function(d) { 
+                return d3.max([d.value]);
+              })]);
     
 var yAxis = d3.axisLeft(yScale);
 
 
 var line = d3.line()
-    .x(function(d) { return xScale(d.Year); }) // set the x values for the line generator
+    .x(function(d) { return xScale(parseDate(d.Year)); }) // set the x values for the line generator
     .y(function(d) { return yScale(d.value); }) // set the y values for the line generator 
     .curve(d3.curveMonotoneX) // apply smoothing to the line
 
-data.forEach(function(d) { // Make every date in the csv data a javascript date object format
-    d.date = parseDate(d.date);
-  });
+
 
 var svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -137,19 +139,8 @@ svg.append("path")
     .attr("d", line); // 11. Calls the line generator 
 
 
-svg.selectAll(".dot")
-    .data(data)
-  .enter().append("circle") // Uses the enter().append() method
-    .attr("class", "dot") // Assign a class for styling
-    .attr("cx", function(d, i) { return xScale(i) })
-    .attr("cy", function(d) { return yScale(d.value) })
-    .attr("r", 5)
-      .on("mouseover", function(a, b, c) { 
-        console.log(a) 
-        this.attr('class', 'focus')
-    })
-      .on("mouseout", function() {  });
-      
+
+
 }
 </script>
 </body></html>
