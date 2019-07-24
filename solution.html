@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<title>Energy production in USA</title>
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line, 
+.axis1 path,
+.axis1 line {
+  fill: none;
+  stroke: #E6E7E8;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path, .x.axis1 path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke-width: 1.5px;
+}
+
+.legend-box {
+  cursor: pointer;  
+}
+
+#mouse-tracker {
+  stroke: #E6E7E8;
+  stroke-width: 1px;
+}
+
+.hover-line { 
+  stroke: #E6E7E8;
+  fill: none;
+  stroke-width: 1px;
+  left: 10px;
+  shape-rendering: crispEdges;
+  opacity: 1e-6;
+}
+
+.hover-text {
+  stroke: none;
+  font-size: 30px;
+  font-weight: bold;
+  fill: #000000;
+}
+
+.tooltip {
+  font-weight: normal;
+}
+
+.brush .extent {
+  stroke: #FFF;
+  shape-rendering: crispEdges;
+}
+
+</style>
+</head>
+
+<script src='https://d3js.org/d3.v5.min.js'></script>
+<body onload = 'init()'><h3>Sources of Energy Production</h3>
+<script>    
+
+async function init() {
+
+  const data = await d3.csv('https://github.com/rpn2/Data-Visualization/blob/master/total_fossil.csv');
+
+
+var margin = {top: 20, right: 200, bottom: 100, left: 50},
+    margin2 = { top: 430, right: 10, bottom: 20, left: 40 },
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom,
+    height2 = 500 - margin2.top - margin2.bottom;
+
+
+
+var parseDate = d3.timeFormat("%Y").parse;
+var bisectDate = d3.bisector(function(d) { return d.date; }).left;
+
+var xScale = d3.scaleTime()
+    .range([0, width]),
+
+    xScale2 = d3.scaleTime()
+    .range([0, width]); // Duplicate xScale for brushing ref later
+
+var yScale = d3.scaleLinear()
+    .range([height, 0]);
+
+var color = d3.scaleOrdinal().range(["#48A36D",  "#56AE7C",  "#64B98C"]);
+
+var xAxis = d3.axisBottom(xScale),
+    xAxis2 = d3.axisBottom(xScale2); // xAxis for brush slider
+    
+
+    
+var yAxis = d3.axisLeft(yScale);
+
+
+
+
+
+}
+
+</script>
+</body></html>
