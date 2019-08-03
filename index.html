@@ -1,146 +1,805 @@
 <!DOCTYPE html>
 <head>
 <meta charset="utf-8">
-<title>Energy production in USA</title>
+<title>Energy production in USA 1960-2018</title>
 <style>
 
 body {
-  font: 10px sans-serif;
+  font: 16px sans-serif;
 }
 
+.axis { font: 14px sans-serif; }
 .axis path,
-.axis line, 
-.axis1 path,
-.axis1 line {
+.axis line 
+ {
   fill: none;
   stroke: #E6E7E8;
   shape-rendering: crispEdges;
 }
 
-.x.axis path, .x.axis1 path {
+.x.axis path {
   display: none;
 }
 
 .line {
   fill: none;
-  stroke-width: 1.5px;
+  stroke-width: 2.5px;
 }
 
-.legend-box {
-  cursor: pointer;  
+
+
+.button{
+    float: left;
+    border: 1px solid black;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    position: relative;
+ }
+
+.active {
+    box-shadow: 0px 2px 0px #888888;
+    position:relative;
+    bottom:3px;
 }
 
-#mouse-tracker {
-  stroke: #E6E7E8;
-  stroke-width: 1px;
+.legend {
+
+	cursor: pointer;
+
+
 }
 
-.hover-line { 
-  stroke: #E6E7E8;
-  fill: none;
-  stroke-width: 1px;
-  left: 10px;
-  shape-rendering: crispEdges;
-  opacity: 1e-6;
-}
-
-.hover-text {
-  stroke: none;
-  font-size: 30px;
-  font-weight: bold;
-  fill: #000000;
-}
-
-.tooltip {
-  font-weight: normal;
-}
-
-.brush .extent {
-  stroke: #FFF;
-  shape-rendering: crispEdges;
-}
 
 </style>
 </head>
+ <h2 >Energy Production in USA 1960-2017</h2>
+<div>
+  <div id ="btncon">
+    <button id="btn1" name="button" type="button" value="Home" onclick="totalData()" class="button">Home</button>
+    <button id="btn2" name="button" type="button" value="Fossil" onclick="fossilData()" class="button">Fossil</button>
+    <button id="btn3" name="button" type="button" value="Renewable" onclick="renewableData()" class="button">Renewable</button>
+  </div>
+</div>
 
-<script src='https://d3js.org/d3.v5.min.js'></script>
-<body onload = 'init()'><h3>Sources of Energy Production</h3>
-<script>    
-
-async function init() {
-
-  const data = await d3.csv('Data/total_fossil.csv');
-
-
-var margin = {top: 20, right: 200, bottom: 100, left: 50},
-    margin2 = { top: 430, right: 10, bottom: 20, left: 40 },
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom,
-    height2 = 500 - margin2.top - margin2.bottom;
 
 
 
-var parseDate = d3.timeParse("%Y");
-var bisectDate = d3.bisector(function(d) { return d.date; }).left;
+<script src='https://d3js.org/d3.v5.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.0.0/d3-annotation.js'></script>
+<body onload = "init()">
+ 
 
-var xScale = d3.scaleTime()
-    .range([0, width]),
-
-    xScale2 = d3.scaleTime()
-    .range([0, width]); // Duplicate xScale for brushing ref later
-
-var yScale = d3.scaleLinear()
-    .range([height, 0]);
-
-var color = d3.scaleOrdinal().range(["#48A36D",  "#56AE7C",  "#64B98C"]);
-
-var xAxis = d3.axisBottom(xScale),
-    xAxis2 = d3.axisBottom(xScale2); // xAxis for brush slider
-    
-xScale.domain(d3.extent(data, function(d) { return parseDate(d.Year); }));
-yScale.domain([0, 
-              d3.max(data, function(d) { 
-                return d3.max([d.value]);
-              })]);
-    
-var yAxis = d3.axisLeft(yScale);
-
-
-var line = d3.line()
-    .x(function(d) { return xScale(parseDate(d.Year)); }) // set the x values for the line generator
-    .y(function(d) { return yScale(d.value); }) // set the y values for the line generator 
-    .curve(d3.curveMonotoneX) // apply smoothing to the line
+<script>  
 
 
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-// 3. Call the x axis in a group tag
-svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(xScale)); // Create an axis component with d3.axisBottom
-
-// 4. Call the y axis in a group tag
-svg.append("g")
-    .attr("class", "y axis")
-    .call(d3.axisLeft(yScale)); // Create an axis component with d3.axisLeft
+var margin = {top: 20, right: 200, bottom: 100, left: 300},
+width = 1200 - margin.left - margin.right,
+height = 500 - margin.top - margin.bottom;
 
 
+var xAxis = d3.scaleTime().range([0, width]);
 
-// 9. Append the path, bind the data, and call the line generator 
-svg.append("path")
-    .datum(data) // 10. Binds data to the line 
-    .attr("class", "line") // Assign a class for styling 
-    .attr("d", line); // 11. Calls the line generator 
+var yAxis = d3.scaleLinear().range([height, 0]);
+
+var svg_base = d3.select("body").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom);
 
 
+var svg = svg_base.append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+var parseYear = d3.timeParse("%Y");
+
+
+function init() {
+
+  
+  document.getElementById('btn1').click();
 
 
 }
+
+function create_chart(data,color,annotations) {
+
+  color.domain(d3.keys(data[0]).filter(function(key) { 
+      return key !== "Year"; 
+      }));
+      
+          
+      var line = d3.line()
+          .x(function(d) { return xAxis(d.Year); }) 
+          .y(function(d) { return yAxis(d.quantity); }) 
+          .curve(d3.curveBasis);
+
+
+      var sources = color.domain().map(function(id) {
+        return {
+          id: id,
+          values: data.map(function(d) {
+            return {Year: d.Year, quantity: +(d[id]),};
+          }),
+          show_line: true,
+          show_mouseover: false
+        };
+      });
+
+
+      xAxis.domain(d3.extent(data, function(d) { return d.Year; }));
+      yAxis.domain([
+      d3.min(sources, function(c) { return d3.min(c.values, function(d) { return d.quantity; }); }),
+      d3.max(sources, function(c) { return d3.max(c.values, function(d) { return d.quantity; }); })
+      ]);
+
+      
+
+      svg.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(xAxis)); 
+
+      //Y axis
+      svg.append("g")
+          .attr("class", "y axis")
+          .call(d3.axisLeft(yAxis));
+      
+      
+      //Label for X axis
+      svg.append("text")             
+      .attr("transform",
+            "translate(" + (width/2) + " ," + 
+                           (height + margin.top + 20) + ")")
+      .style("text-anchor", "middle")
+      .text("Year");
+
+     
+      
+
+     svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left + 240)
+        .attr("x",0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Quantity in Quadrillion Btu");     
+
+
+      var EnergySource = svg.selectAll(".EnergySource").data(sources).enter().append("g").attr("class", "EnergySource");
+
+      EnergySource.append("path")
+      .attr("class", "line")
+      .attr("d", function(d) { return d.show_line ? line(d.values) : null; })
+      .style("stroke", function(d) { return color(d.id); });
+
+
+      var legend = svg.selectAll('.legend').data(sources).enter().append('g').attr('class', 'legend');
+
+      var ls = 150 / sources.length;
+
+      var newy;
+
+
+
+     //Annotations
+
+     const makeAnnotations = d3.annotation()
+           
+            .type(d3.annotationLabel)
+            //accessors & accessorsInverse not needed
+            //if using x, y in annotations JSON
+            .accessors({
+              x: d => xAxis(parseYear(d.Year)),
+              y: d => yAxis(d.Quantity)
+            })
+            .annotations(annotations)
+           
+
+          
+        var anno = svg.append("g").attr("id", "annoid")
+            .attr("class", "annotation-group")
+            .style('font-size', '11px')
+            .call(makeAnnotations)
+
+
+
+      // label legend click
+      svg.append("text")
+        .attr("y", 200)
+        .attr("x",width + (margin.right/3) - 20)
+        .style("font-size", "12px")
+        .text("Click legend to show/hide")
+        .attr('fill', 'grey'); 
+
+      legend.append('rect')
+        .attr("x",  width + (margin.right/3) - 25)       
+        .attr('y', function(d, i){ return (ls)+i*(ls) - 8 + 25; })
+        .attr('width', 10)
+        .attr('height', 10)
+        .attr('fill', function(d) { 
+          return d.show_line ? color(d.id) : "grey";
+        });
+
+      legend.on("click", function(d){ 
+      	  d.show_mouseover = true
+          d.show_line = !d.show_line; 
+          newy = updateyaxis(sources);
+          yAxis.domain([0,newy]);
+          svg.select(".y.axis")
+          .transition()
+          .call(d3.axisLeft(yAxis));  
+          EnergySource.select("path")
+          .transition()
+          .attr("d", function(d){
+            return d.show_line ? line(d.values) : null; 
+          });
+
+          legend.select("rect").transition()
+           .attr('fill', function(d) { 
+          return d.show_line ? color(d.id) : "grey";
+          });
+
+
+          svg.select("#annoid").remove();
+          
+
+      });
+
+      
+
+    legend.append('text')
+        .attr("x",  width + (margin.right/3) - 10)
+        .attr('y', function(d, i){ return (ls)+i*(ls) + 25;})
+        .text(function(d){ return d.id; });
+
+
+
+    //Mouse-over events
+
+        var mouseG = svg.append("g")
+      		.attr("class", "mouse-over-effects");
+
+	    mouseG.append("path") 
+	      .data(sources)
+	      .attr("class", "mouse-line")
+	      .style("stroke", "black")
+	      .style("stroke-width", "0.5px")
+	      .style("opacity", "0");
+
+	    var lines = document.getElementsByClassName('line');  
+
+	    var mousePerLine = mouseG.selectAll('.mouse-per-line')
+	      .data(sources)
+	      .enter()
+	      .append("g")
+	      .attr("class", "mouse-per-line");
+
+	    mousePerLine.append("circle")
+	      .attr("r", 4)
+	      .style("stroke", function(d) {
+	        return color(d.id);
+	      })
+	      .style("fill", "none")
+	      .style("stroke-width", "1px")
+	      .style("opacity", "0");
+
+	    mousePerLine.append("text").attr("font-size", "12px")
+	      .attr("transform", "translate(10,10)");
+
+	    mouseG.append('svg:rect')
+	      .attr('width', width) 
+	      .attr('height', height)
+	      .attr('fill', 'none')
+	      .attr('pointer-events', 'all')
+	      .on('mouseout', function() { 
+	        d3.select(".mouse-line")
+	          .style("opacity", "0");
+	        d3.selectAll(".mouse-per-line circle")
+	          .style("opacity", "0");
+	        d3.selectAll(".mouse-per-line text")
+	          .style("opacity", "0");
+	      })
+	      .on('mouseover', function() { 
+	        d3.select(".mouse-line")
+	          .style("opacity", "1");
+	        d3.selectAll(".mouse-per-line circle")
+	          .style("opacity", function(d) {
+	          	     return d.show_line ? "1" : "0";});
+	        d3.selectAll(".mouse-per-line text")
+	          .style("opacity", function(d) {
+	          	     return d.show_line ? "1" : "0";});
+	      })
+	      .on('mousemove', function() { 
+	        var mouse = d3.mouse(this);
+	        d3.select(".mouse-line")
+	          .attr("d", function() {
+	            var d = "M" + mouse[0] + "," + height;
+	            d += " " + mouse[0] + "," + 0;
+
+	            return d;
+
+	          });
+
+
+		      d3.selectAll(".mouse-per-line")
+	          .attr("transform", function(d, i) {
+
+	          	if (d.show_line === true) {
+	          			
+			            var xDate = xAxis.invert(mouse[0]),
+			                bisect = d3.bisector(function(d) { return d.date; }).right;
+			                idx = bisect(d.values, xDate);
+			            
+			            var beginning = 0,
+			                end = lines[i].getTotalLength(),
+			                target = null;
+
+			            while (true){
+			              target = Math.floor((beginning + end) / 2);
+			              pos = lines[i].getPointAtLength(target);
+			              if ((target === end || target === beginning) && pos.x !== mouse[0]) {
+			                  break;
+			              }
+			              if (pos.x > mouse[0])      end = target;
+			              else if (pos.x < mouse[0]) beginning = target;
+			              else break; //position found
+			            }
+			            
+			            d3.select(this).select('text')
+			              .text(yAxis.invert(pos.y).toFixed(2));
+			              
+			            return "translate(" + mouse[0] + "," + pos.y +")";
+
+
+	          	}
+
+	          	else
+	          		return null;
+			            
+	          });
+      });
+
+
+
+
+};
+
+function updateyaxis(data){  
+    var maxYValues = data.map(function(d) { 
+      if (d.show_line){
+        return d3.max(d.values, function(value) { 
+          return value.quantity; })
+      }
+    });
+    return d3.max(maxYValues);
+  };
+
+function wrap(text, width) {
+    text.each(function () {
+        var text = d3.select(this),
+            words = text.text().split(/\s+/).reverse(),
+            word,
+            line = [],
+            lineNumber = 0,
+            lineHeight = 1.1, // ems
+            x = text.attr("x"),
+            y = text.attr("y"),
+            dy = 0, //parseFloat(text.attr("dy")),
+            tspan = text.text(null)
+                        .append("tspan")
+                        .attr("x", x)
+                        .attr("y", y)
+                        
+                        .attr("dy", dy + "em");
+        while (word = words.pop()) {
+            line.push(word);
+            tspan.text(line.join(" "));
+            if (tspan.node().getComputedTextLength() > width) {
+                line.pop();
+                tspan.text(line.join(" "));
+                line = [word];
+                tspan = text.append("tspan")
+                            .attr("x", x)
+                            .attr("y", y)
+                            
+                            .attr("dy", ++lineNumber * lineHeight + dy + "em")
+                            .text(word);
+            }
+        }
+    });
+};
+
+async function fossilData() {
+
+
+	var element = document.getElementById("btn2");
+    element.classList.add("active");
+
+    var element = document.getElementById("btn1");
+    element.classList.remove("active");
+
+    var element = document.getElementById("btn3");
+    element.classList.remove("active");
+
+    d3.select('#btn1').style('background-color', 'initial');
+    d3.select('#btn3').style('background-color', 'initial');
+    d3.select('#btn2').style('background-color', '#888888');
+
+    svg_base.selectAll("#ti").remove();
+    svg_base.selectAll("#ri").remove();
+    svg_base.selectAll("#fi").remove();
+    
+
+    const data = await d3.csv('Fossil.csv');
+
+    
+    svg.selectAll("*").remove();
+
+    
+
+    var color = d3.scaleOrdinal(["rgb(100,186,170)", "rgb(136,20,72)", "rgb(169,232,26)", "rgb(161,143,248)"]);
+
+
+    
+
+    data.forEach(function(d) { 
+          d.Year = parseYear(d.Year);
+          d.Coal = +d.Coal;
+          d.CrudeOil = +d.CrudeOil;
+          d.NaturalGasDry = +d.NaturalGasDry;
+          d.NGPL = +d.NGPL;
+          
+      });
+
+      
+    svg.append("text")
+        .attr("y", 0)
+        .attr("x",250)
+        .text("Fossil Energy Production")
+        .attr("font-weight","bold");  
+
+    svg_base.append("text").attr("id", "fi")
+        .attr("y", 50)
+        .attr("x",30)
+        .text("Compostion/Mix of fossil fuel varies over time")
+        .attr("font-size", "14px")
+        .attr("fill", "black")
+        .call(wrap, 190)
+
+    svg_base.append("text").attr("id", "fi")
+        .attr("y", 105)
+        .attr("x",30)
+        .text("Coal dominance reducing since 2010, a first step towards reducing emissions")
+        .attr("font-size", "14px")
+        .attr("fill", "black")
+        .call(wrap, 190)
+
+    svg_base.append("text").attr("id", "fi")
+        .attr("y", 180)
+        .attr("x",30)
+        .text("Efficient drilling techniques increased production and reduced price of natural gas since 2008")
+        .attr("font-size", "14px")
+        .attr("fill", "black")
+        .call(wrap, 190)
+
+   
+      
+
+      var annotations = [{
+            note: {
+              label: "Naturdal Gas is Dominant",
+            },
+            //can use x, y directly instead of data
+            data: { Year: "1973", Quantity: 40 },
+            dy: -35,
+            dx: -42
+          },
+          {
+            note: {
+              label: "Coal is dominant",
+            },
+            //can use x, y directly instead of data
+            data: { Year: "1994", Quantity: 43 },
+            dy: -35,
+            dx: -42
+          },
+
+          {
+            note: {
+              label: "Natural Gas is dominant",
+            },
+            //can use x, y directly instead of data
+            data: { Year: "2010", Quantity: 44},
+            dy: -35,
+            dx: -42
+          },
+
+          {
+            note: {
+              label: "CrudeOil rise due to fracking/drilling at Texas, North Dakota",
+            },
+            //can use x, y directly instead of data
+            data: { Year: "2011", Quantity: 24 },
+            dy: -35,
+            dx: -42
+          },
+
+          {
+            note: {
+              label: "Coal is no longer dominant, however significant",
+            },
+            //can use x, y directly instead of data
+            data: { Year: "2016", Quantity: 30 },
+            dy: 35,
+            dx: 42
+          }]
+
+      
+        create_chart(data,color,annotations);
+    
+
+};
+
+async function renewableData() {
+
+
+	var element = document.getElementById("btn3");
+	element.classList.add("active");
+
+	var element = document.getElementById("btn1");
+	element.classList.remove("active");
+
+	var element = document.getElementById("btn2");
+	element.classList.remove("active");	
+
+  d3.select('#btn1').style('background-color', 'initial');
+  d3.select('#btn2').style('background-color', 'initial');
+  d3.select('#btn3').style('background-color', '#888888');
+
+  svg_base.selectAll("#ti").remove();
+  svg_base.selectAll("#ri").remove();
+  svg_base.selectAll("#fi").remove();
+    
+
+  const data = await d3.csv('Renewable.csv');
+
+    
+  svg.selectAll("*").remove();
+
+    
+
+  var color = d3.scaleOrdinal(["rgb(100,186,170)", "rgb(136,20,72)", "rgb(169,232,26)", "rgb(161,143,248)", "rgb(212,119,103)"]);
+
+
+    
+
+  data.forEach(function(d) { 
+          d.Year = parseYear(d.Year);
+          d.Biomass = +d.Biomass;
+          d.Geothermal = +d.Geothermal;
+          d.Hydroelectric = +d.Hydroelectric;
+          d.Solar = +d.Solar;
+          d.Wind = +d.Wind;
+          
+      });
+  
+  svg.append("text")
+        .attr("y", 0)
+        .attr("x",250)
+        .text("Renewable Energy Production")
+        .attr("font-weight","bold");  
+
+
+  svg_base.append("text").attr("id", "ri")
+        .attr("y", 50)
+        .attr("x",30)
+        .text("State/federal government requirements, and incentives to use renewable energy have favored increased production")
+        .attr("font-size", "14px")
+        .attr("fill", "black")
+        .call(wrap, 190)
+
+    svg_base.append("text").attr("id", "ri")
+        .attr("y", 150)
+        .attr("x",30)
+        .text("The U.S. Energy Information Administration projects that U.S. renewable energy consumption will continue to increase through 2050")
+        .attr("font-size", "14px")
+        .attr("fill", "black")
+        .call(wrap, 190)
+
+    svg_base.append("text").attr("id", "ri")
+        .attr("y", 270)
+        .attr("x",30)
+        .text("Renewable sources still have a long way to become dominant")
+        .attr("font-size", "14px")
+        .attr("fill", "black")
+        .call(wrap, 190)
+
+      
+      
+
+      var annotations = [{
+            note: {
+              label: "Hydroelectric constant since 2000s",
+            },
+            //can use x, y directly instead of data
+            data: { Year: "2001", Quantity: 5 },
+            dy: 35,
+            dx: 42
+          },
+          {
+            note: {
+              label: "Biomass doubled since 2000 due to federal incentives",
+            },
+            //can use x, y directly instead of data
+            data: { Year: "2014", Quantity: 10 },
+            dy: 30,
+            dx: 20
+          },
+          {
+            note: {
+              label: "Wind quadrupled since 2005 due to federal incentives",
+            },
+            //can use x, y directly instead of data
+            data: { Year: "2015", Quantity: 4 },
+            dy: 35,
+            dx: 35
+          }
+         
+          ]
+
+
+          create_chart(data,color,annotations);
+};
+
+
+async function totalData() {
+
+
+	var element = document.getElementById("btn1");
+	element.classList.add("active");
+
+	var element = document.getElementById("btn2");
+	element.classList.remove("active");
+
+	var element = document.getElementById("btn3");
+	element.classList.remove("active");	
+
+
+    d3.select('#btn2').style('background-color', 'initial');
+    d3.select('#btn3').style('background-color', 'initial');
+    d3.select('#btn1').style('background-color', '#888888');
+
+    svg_base.selectAll("#ti").remove();
+    svg_base.selectAll("#ri").remove();
+    svg_base.selectAll("#fi").remove();
+
+    const data = await d3.csv('Overall.csv');
+
+    svg.selectAll("*").remove();
+
+    var color = d3.scaleOrdinal(["rgb(100,186,170)", "rgb(136,20,72)", "rgb(169,232,26)"]);
+
+      data.forEach(function(d) { 
+          d.Year = parseYear(d.Year);
+          d.TotalFossil = +d.TotalFossil;
+          d.Nuclear = +d.Nuclear;
+          d.TotalRenewable= +d.TotalRenewable;
+      });
+
+      
+     
+
+     
+      
+
+      svg.append("text")
+        .attr("y", 0)
+        .attr("x",250)
+        .text("Primary Energy Production")
+        .attr("font-weight","bold");
+        
+
+
+     svg_base.append("text").attr("id", "ti")
+        .attr("y", 50)
+        .attr("x",30)
+        .text("US produces more than 90% of it's energy needs in recent years")
+        .attr("font-size", "14px")
+        .attr("fill", "black")
+        .call(wrap, 190)
+
+      svg_base.append("text").attr("id", "ti")
+        .attr("y", 120)
+        .attr("x",30)
+        .text("Fossil fuel dominance since 100 years, accounting for >80% of energy source.")
+        .attr("font-size", "14px")
+        .attr("fill", "black")
+        .call(wrap, 190)
+
+      svg_base.append("text").attr("id", "ti")
+        .attr("y", 190)
+        .attr("x",30)
+        .text("Nuclear energy supplies 20% of US electric power, though no new plant has been commissed since 2000s")
+        .attr("font-size", "14px")
+        .attr("fill", "black")
+        .call(wrap, 190)
+
+      svg_base.append("text").attr("id", "ti")
+        .attr("y", 280)
+        .attr("x",30)
+        .text("Tapping renewable energy can reduce the use of fossil fuels, which are major sources of U.S. carbon dioxide emissions")
+        .attr("font-size", "14px")
+        .attr("fill", "black")
+        .call(wrap, 190)
+
+      
+
+     //d3.select('#paraText').text("Fossil fuel dominance since 100 years, accounting for >80% of energy source")
+
+      var annotations = [{
+            note: {
+              label: "New production technologies",
+            },
+            //can use x, y directly instead of data
+            data: { Year: "1973", Quantity: 110 },
+            dy: 15, //-35
+            dx: 60 //-42
+          },
+          {
+            note: {
+              label: "Natural Gas dominance",
+            },
+            //can use x, y directly instead of data
+            data: { Year: "2014", Quantity: 138 },
+            dy: 15, //0
+            dx: 60 //62
+          },
+
+          {
+            note: {
+              label: "Solar/Wind popularity",
+            },
+            //can use x, y directly instead of data
+            data: { Year: "2009", Quantity: 15 },
+            dy: 5,
+            dx: +60
+          },
+
+          {
+            note: {
+              label: "Biomass popularity",
+            },
+            //can use x, y directly instead of data
+            data: { Year: "2001", Quantity: 11 },
+            dy: 5,
+            dx: +60
+          },
+
+          {
+            note: {
+              label: "Nuclear energy stable since 2000s",
+            },
+            //can use x, y directly instead of data
+            data: { Year: "2001", Quantity: 16 },
+            dy: -15,
+            dx: +62
+          }]
+
+      
+        create_chart(data,color,annotations);
+
+      
+
+};
+
+
+
+
+//https://www.eia.gov/energyexplained/?page=us_energy_home
+//https://www.susielu.com/data-viz/d3-annotation-design-and-modes
+//https://bl.ocks.org/larsenmtl/e3b8b7c2ca4787f77d78f58d41c3da91
 </script>
 </body></html>
+
